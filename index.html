@@ -981,6 +981,8 @@ function paintBoxes() {
     if (!box) return;
     const colorMap = {0: "rgba(255,255,255,0)", 1: "rgba(127,119,221,0.55)", 2: "rgba(93,202,165,0.55)", 3: "rgba(240,153,123,0.55)", 4: "rgba(239,172,39,0.55)"};
     box.style.background = colorMap[state];
+    box.style.borderColor = state ? PARTY_COLORS[state].dark : "rgba(0,0,0,0.35)";
+    box.style.borderWidth = state ? "3px" : "1.5px";
   });
 }
 
