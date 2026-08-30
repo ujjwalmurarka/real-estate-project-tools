@@ -14,6 +14,7 @@
       '</button>' +
       '<div class="mini-calc-panel" id="mini-calc-panel" hidden>' +
         '<div class="mini-calc-head"><span>Calculator</span><button class="mini-calc-close" id="mini-calc-close" aria-label="Close calculator">&times;</button></div>' +
+        '<div class="mini-calc-expr" id="mini-calc-expr"></div>' +
         '<div class="mini-calc-display" id="mini-calc-display">0</div>' +
         '<div class="mini-calc-grid">' +
           '<button data-act="clear">C</button>' +
@@ -46,13 +47,22 @@
     const panel = wrap.querySelector("#mini-calc-panel");
     const closeBtn = wrap.querySelector("#mini-calc-close");
     const display = wrap.querySelector("#mini-calc-display");
+    const exprEl = wrap.querySelector("#mini-calc-expr");
 
     let current = "0";
     let previous = null;
     let pendingOp = null;
     let justEvaluated = false;
+    let exprText = "";
 
-    function render() { display.textContent = current; }
+    function render() {
+      display.textContent = current;
+      exprEl.textContent = exprText;
+    }
+
+    function opSymbol(op) {
+      return op === "+" ? "+" : op === "-" ? "−" : op === "*" ? "×" : "÷";
+    }
 
     function trimNumber(n) {
       const rounded = Math.round(n * 1e10) / 1e10;
@@ -60,14 +70,14 @@
     }
 
     function inputDigit(d) {
-      if (justEvaluated) { current = "0"; previous = null; pendingOp = null; justEvaluated = false; }
+      if (justEvaluated) { current = "0"; previous = null; pendingOp = null; justEvaluated = false; exprText = ""; }
       if (current === "0") current = d;
       else current += d;
       render();
     }
 
     function inputDot() {
-      if (justEvaluated) { current = "0"; previous = null; pendingOp = null; justEvaluated = false; }
+      if (justEvaluated) { current = "0"; previous = null; pendingOp = null; justEvaluated = false; exprText = ""; }
       if (!current.includes(".")) current += ".";
       render();
     }
@@ -78,7 +88,7 @@
     }
 
     function clearAll() {
-      current = "0"; previous = null; pendingOp = null; justEvaluated = false;
+      current = "0"; previous = null; pendingOp = null; justEvaluated = false; exprText = "";
       render();
     }
 
@@ -98,6 +108,8 @@
       }
     }
 
+    // Shows the running expression (e.g. "12 +") above the display as soon as an operator
+    // is chosen, so it's clear what's been entered and which operation is queued up.
     function chooseOp(op) {
       if (pendingOp && !justEvaluated) {
         previous = trimNumber(applyOp(previous, current, pendingOp));
@@ -107,10 +119,13 @@
       pendingOp = op;
       justEvaluated = false;
       current = "0";
+      exprText = previous + " " + opSymbol(op);
+      render();
     }
 
     function equals() {
       if (pendingOp == null) return;
+      exprText = previous + " " + opSymbol(pendingOp) + " " + current + " =";
       const result = applyOp(previous, current, pendingOp);
       current = Number.isFinite(result) ? trimNumber(result) : "Error";
       previous = null; pendingOp = null; justEvaluated = true;
