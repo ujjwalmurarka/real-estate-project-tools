@@ -126,18 +126,20 @@ function computeCommercial(commercialSettings) {
     children.push({ id: "commercial-" + fl.key, label: fl.label, totalSqft: floorSqft, totalValue: floorValue, partySqft: floorPartySqft, partyValue: floorPartyValue, ownerShare: rates.ownerShare });
   });
 
-  // Restaurant unit
+  // Restaurant unit — split by % share per party (saved.restaurantShares), not one owner
   const restSellable = COMMERCIAL_RESTAURANT_SQFT;
   const restValue = restSellable * rates.f4;
   totalSqft += restSellable;
   totalValue += restValue;
-  const restState = saved ? parseInt(saved.restaurantParty) : 0;
+  const restShares = (saved && saved.restaurantShares) || {};
   let restPartySqft = {1: 0, 2: 0, 3: 0, 4: 0};
   let restPartyValue = {1: 0, 2: 0, 3: 0, 4: 0};
-  if (restState > 0) {
-    restPartySqft[restState] = restSellable; restPartyValue[restState] = restValue;
-    partySqft[restState] += restSellable; partyValue[restState] += restValue;
-  }
+  PARTIES.forEach(p => {
+    const pct = parseFloat(restShares[p]) || 0;
+    const sqft = restSellable * pct / 100;
+    restPartySqft[p] = sqft; restPartyValue[p] = sqft * rates.f4;
+    partySqft[p] += sqft; partyValue[p] += sqft * rates.f4;
+  });
   children.push({ id: "commercial-restaurant", label: "4th floor (restaurant)", totalSqft: restSellable, totalValue: restValue, partySqft: restPartySqft, partyValue: restPartyValue, ownerShare: rates.ownerShare });
 
   return { totalSqft, totalValue, partySqft, partyValue, ownerShare: rates.ownerShare, children };

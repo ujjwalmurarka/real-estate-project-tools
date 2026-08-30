@@ -246,8 +246,8 @@ table.unit-table th:first-child, table.unit-table td:first-child {
   box-shadow: 2px 0 4px -2px rgba(20,21,30,0.08);
 }
 table.unit-table td input[type=number] { min-width: 68px; }
-table.unit-table .flats-hint { font-size: var(--fs-00); color: var(--muted); margin-top: 3px; white-space: nowrap; }
-table.unit-table .flats-hint.warn { color: var(--danger); }
+.flats-hint { font-size: var(--fs-00); color: var(--muted); margin-top: 3px; white-space: nowrap; }
+.flats-hint.warn { color: var(--danger); }
 .p-head { color: var(--p1-dark); } .p-head.p2 { color: var(--p2-dark); } .p-head.p3 { color: var(--p3-dark); } .p-head.p4 { color: var(--p4-dark); }
 
 /* ---- Commercial floor maps ---- */

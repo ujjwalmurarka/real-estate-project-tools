@@ -76,20 +76,36 @@
 
 <div class="card" id="restaurant-card">
   <h2>4th floor</h2>
-  <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
     <div>
       <div style="font-weight:600; font-size:17px;">Restaurant unit</div>
-      <div class="stat-sub">16,981 sqft (single tenant, not sub-divided)</div>
+      <div class="stat-sub">16,981 sqft — allocate by percentage share across parties</div>
     </div>
-    <select id="restaurant-party" onchange="recalc()" style="width:auto; min-width:200px; padding:12px 14px; border:1.5px solid var(--line-strong); border-radius:10px; font-size:16px;">
-      <option value="0">Unassigned</option>
-      <option value="1" id="opt-1">Party 1</option>
-      <option value="2" id="opt-2">Party 2</option>
-      <option value="3" id="opt-3">Party 3</option>
-      <option value="4" id="opt-4">Builder</option>
-    </select>
+    <div class="stat-sub" id="restaurant-value" style="text-align:right;">Rs 0</div>
   </div>
-  <div class="stat-sub" id="restaurant-value" style="margin-top:6px;">Rs 0</div>
+  <div class="col4" style="margin-top:14px;">
+    <div>
+      <label><span id="rest-label-1">Party 1</span> share (%)</label>
+      <input type="number" min="0" max="100" step="0.1" value="0" id="rest-share-1" data-party="1" oninput="onRestaurantShareInput()">
+      <div class="flats-hint" id="rest-hint-1"></div>
+    </div>
+    <div>
+      <label><span id="rest-label-2">Party 2</span> share (%)</label>
+      <input type="number" min="0" max="100" step="0.1" value="0" id="rest-share-2" data-party="2" oninput="onRestaurantShareInput()">
+      <div class="flats-hint" id="rest-hint-2"></div>
+    </div>
+    <div>
+      <label><span id="rest-label-3">Party 3</span> share (%)</label>
+      <input type="number" min="0" max="100" step="0.1" value="0" id="rest-share-3" data-party="3" oninput="onRestaurantShareInput()">
+      <div class="flats-hint" id="rest-hint-3"></div>
+    </div>
+    <div>
+      <label><span id="rest-label-4">Builder</span> share (%)</label>
+      <input type="number" min="0" max="100" step="0.1" value="0" id="rest-share-4" data-party="4" oninput="onRestaurantShareInput()">
+      <div class="flats-hint" id="rest-hint-4"></div>
+    </div>
+  </div>
+  <p class="stat-sub" id="restaurant-share-note" style="margin-top:8px;"></p>
 </div>
 
 <hr style="border:none; border-top:1px solid var(--line); margin:24px 0;">
@@ -134,7 +150,7 @@
   <summary><span>Advanced tools</span><span class="chev">&#8250;</span></summary>
   <div style="margin-top:16px;">
     <button class="toggle-btn" style="width:100%; font-weight:600;" onclick="autoAssign()">Auto assign</button>
-    <p style="font-size:14px; color: var(--muted); margin: 8px 0 0;">Auto assign balances each floor separately across the 3 owner parties and the builder, in the same proportions as the overall split (owner share ÷ 3 per party). This keeps every floor broadly equal, not just the building total. Whole shops can't be split, so small floors will only be approximately equal.</p>
+    <p style="font-size:14px; color: var(--muted); margin: 8px 0 0;">Auto assign balances each floor separately across the 3 owner parties and the builder, in the same proportions as the overall split (owner share ÷ 3 per party). This keeps every floor broadly equal, not just the building total. Whole shops can't be split, so small floors will only be approximately equal. The 4th floor restaurant unit can be split, so it's set to exactly those target percentages.</p>
 
     <hr style="border:none; border-top:1px solid var(--line); margin: var(--space-5) 0;">
 
@@ -162,7 +178,7 @@
       Spread across floors (avoid concentrating one party on 1-2 floors)
     </label>
     <button class="toggle-btn" style="margin-top:10px; width:100%; font-weight:600;" onclick="runSimulation()">Find combinations</button>
-    <p style="font-size:14px; color: var(--muted); margin: 8px 0 0;">Searches for whole-unit combinations that add up close to the target — shops can't be split, so an exact match isn't always possible. With spread on, the overall target still comes first: each floor gets a proportional share of the target as a guide, but a floor can land under its share if another floor compensates by going a little over, so the total stays close to target while allocation still stays broadly even across floors. "All units" can suggest taking a shop currently held by another party; applying it will reassign that shop away from them.</p>
+    <p style="font-size:14px; color: var(--muted); margin: 8px 0 0;">Searches for whole-unit combinations that add up close to the target — shops can't be split, so an exact match isn't always possible. With spread on, the overall target still comes first: each floor gets a proportional share of the target as a guide, but a floor can land under its share if another floor compensates by going a little over, so the total stays close to target while allocation still stays broadly even across floors. "All units" can suggest taking a shop currently held by another party; applying it will reassign that shop away from them. The 4th floor restaurant unit isn't included here — allocate it directly by percentage share above.</p>
     <div id="sim-results" style="margin-top:10px;"></div>
   </div>
 </details>
@@ -172,6 +188,9 @@
 const floors = COMMERCIAL_FLOORS; // from shared.js
 let shopState = {};
 let activePainter = 1;
+// Restaurant unit is allocated by % share per party instead of a single owner, since (unlike
+// shops) it doesn't need to go to one party whole — shares can add up to under or over 100%.
+let restaurantShares = {1: 0, 2: 0, 3: 0, 4: 0};
 let settings = loadSettings(); // from shared.js
 floors.forEach(fl => {
   fl.boxes.forEach(b => {
@@ -414,10 +433,10 @@ function onNameChange() {
   document.querySelectorAll('.legend-name[data-p="2"]').forEach(el => el.textContent = n2);
   document.querySelectorAll('.legend-name[data-p="3"]').forEach(el => el.textContent = n3);
   document.querySelectorAll('.legend-name[data-p="4"]').forEach(el => el.textContent = n4);
-  document.getElementById("opt-1").textContent = n1;
-  document.getElementById("opt-2").textContent = n2;
-  document.getElementById("opt-3").textContent = n3;
-  document.getElementById("opt-4").textContent = n4;
+  document.getElementById("rest-label-1").textContent = n1;
+  document.getElementById("rest-label-2").textContent = n2;
+  document.getElementById("rest-label-3").textContent = n3;
+  document.getElementById("rest-label-4").textContent = n4;
   const fsHead1 = document.getElementById("fs-party-head-1");
   const fsHead2 = document.getElementById("fs-party-head-2");
   const fsHead3 = document.getElementById("fs-party-head-3");
@@ -436,6 +455,23 @@ function onNameChange() {
   document.getElementById("sim-opt-4").textContent = n4;
   buildPainter();
   saveState();
+}
+
+function onRestaurantShareInput() {
+  [1, 2, 3, 4].forEach(p => {
+    const el = document.getElementById("rest-share-" + p);
+    const v = parseFloat(el.value);
+    restaurantShares[p] = isNaN(v) || v < 0 ? 0 : v;
+  });
+  recalc();
+  saveState();
+}
+
+function applyRestaurantSharesToInputs() {
+  [1, 2, 3, 4].forEach(p => {
+    const el = document.getElementById("rest-share-" + p);
+    if (el) el.value = restaurantShares[p];
+  });
 }
 
 function autoAssign() {
@@ -466,11 +502,7 @@ function autoAssign() {
         if (diff > bestDiff) { bestDiff = diff; bestParty = p; }
       });
       running[bestParty] += item.value;
-      if (item.key === "restaurant") {
-        document.getElementById("restaurant-party").value = bestParty;
-      } else {
-        shopState[item.key] = bestParty;
-      }
+      shopState[item.key] = bestParty;
     });
   }
 
@@ -481,15 +513,26 @@ function autoAssign() {
     balanceGroup(items);
   });
 
-  const restValue = 16981 * rates.f4;
-  balanceGroup([{key: "restaurant", value: restValue}]);
+  // The restaurant unit isn't a whole indivisible item like a shop — it can be split by
+  // percentage, so auto-assign gives it exactly the target proportions rather than picking
+  // one party to hold it all.
+  restaurantShares = {
+    1: round1(rates.ownerShare / 3 * 100),
+    2: round1(rates.ownerShare / 3 * 100),
+    3: round1(rates.ownerShare / 3 * 100),
+    4: round1((1 - rates.ownerShare) * 100)
+  };
+  applyRestaurantSharesToInputs();
 
   recalc();
 }
 
+function round1(n) { return Math.round(n * 10) / 10; }
+
 function resetAll() {
   Object.keys(shopState).forEach(k => { shopState[k] = 0; });
-  document.getElementById("restaurant-party").value = 0;
+  restaurantShares = {1: 0, 2: 0, 3: 0, 4: 0};
+  applyRestaurantSharesToInputs();
   recalc();
 }
 
@@ -529,12 +572,8 @@ function simPoolItems(scope) {
       items.push({key: k, label: "Shop " + b.name + " — " + fl.label, value: value, sqft: sellable, floorKey: fl.key, floorLabel: fl.label});
     });
   });
-  const restSqft = 16981;
-  const restValue = restSqft * rates.f4;
-  const restState = parseInt(document.getElementById("restaurant-party").value);
-  if (!(scope === "unassigned" && restState !== 0)) {
-    items.push({key: "restaurant", label: "Restaurant unit — 4th floor", value: restValue, sqft: restSqft, floorKey: "restaurant", floorLabel: "4th floor"});
-  }
+  // The restaurant unit isn't part of this pool — it's split by percentage share directly
+  // on the page, not assigned as one whole indivisible item like a shop.
   return items;
 }
 
@@ -784,16 +823,7 @@ function renderSimResults(candidates, party, targetCr, scope) {
 function applyCombo(party, combo) {
   // clear this party's current holdings, then assign exactly the chosen combination
   Object.keys(shopState).forEach(k => { if (shopState[k] === party) shopState[k] = 0; });
-  if (parseInt(document.getElementById("restaurant-party").value) === party) {
-    document.getElementById("restaurant-party").value = 0;
-  }
-  combo.forEach(it => {
-    if (it.key === "restaurant") {
-      document.getElementById("restaurant-party").value = party;
-    } else {
-      shopState[it.key] = party;
-    }
-  });
+  combo.forEach(it => { shopState[it.key] = party; });
   recalc();
 }
 
@@ -811,7 +841,7 @@ async function saveState() {
   try {
     const data = {
       shopState: shopState,
-      restaurantParty: document.getElementById("restaurant-party").value,
+      restaurantShares: restaurantShares,
       activePainter: activePainter
     };
     window.localStorage.setItem("commercial-selector-state", JSON.stringify(data));
@@ -827,7 +857,15 @@ async function loadState() {
     if (!raw) return;
     const data = JSON.parse(raw);
     if (data.shopState) shopState = data.shopState;
-    if (data.restaurantParty !== undefined) document.getElementById("restaurant-party").value = data.restaurantParty;
+    if (data.restaurantShares) {
+      restaurantShares = data.restaurantShares;
+    } else if (data.restaurantParty !== undefined) {
+      // Migrate from the old single-owner format (whole unit went to one party).
+      const p = parseInt(data.restaurantParty);
+      restaurantShares = {1: 0, 2: 0, 3: 0, 4: 0};
+      if (p > 0) restaurantShares[p] = 100;
+    }
+    applyRestaurantSharesToInputs();
     if (data.activePainter) activePainter = data.activePainter;
   } catch (e) {
     markStorageUnavailable();
@@ -908,23 +946,33 @@ function recalc() {
     });
   });
 
-  // restaurant
+  // restaurant — split by % share per party instead of going whole to one party
   const restSellable = COMMERCIAL_RESTAURANT_SQFT;
   const restValue = restSellable * rates.f4;
   totalCommercialValue += restValue;
   totalSqft += restSellable;
-  const restState = parseInt(document.getElementById("restaurant-party").value);
   let restPartySqft = {1: 0, 2: 0, 3: 0, 4: 0};
-  let restUnassignedSqft = 0;
-  if (restState > 0) {
-    totals[restState] += restValue;
-    restPartySqft[restState] = restSellable;
-    totalPartySqft[restState] += restSellable;
-  } else {
-    restUnassignedSqft = restSellable;
-    totalUnassignedSqft += restSellable;
-  }
+  let restTotalPct = 0;
+  [1, 2, 3, 4].forEach(p => {
+    const pct = restaurantShares[p] || 0;
+    restTotalPct += pct;
+    const sqft = restSellable * pct / 100;
+    restPartySqft[p] = sqft;
+    totals[p] += sqft * rates.f4;
+    totalPartySqft[p] += sqft;
+    const hintEl = document.getElementById("rest-hint-" + p);
+    if (hintEl) hintEl.textContent = pct > 0 ? fmtSqft(sqft) + " sqft · " + fmtCr(sqft * rates.f4) : "";
+  });
+  totalUnassignedSqft += restSellable * Math.max(0, 100 - restTotalPct) / 100;
   document.getElementById("restaurant-value").textContent = fmtRs(restValue) + " (" + fmtCr(restValue) + ") at current 4th floor rate";
+  const restNoteEl = document.getElementById("restaurant-share-note");
+  if (restNoteEl) {
+    const overAllocated = restTotalPct > 100 + 1e-6;
+    restNoteEl.textContent = overAllocated
+      ? "Over-allocated: shares add up to " + restTotalPct.toFixed(1) + "% (should be 100% or less)."
+      : restTotalPct.toFixed(1) + "% allocated" + (restTotalPct < 100 - 1e-6 ? ", " + (100 - restTotalPct).toFixed(1) + "% unassigned." : ".");
+    restNoteEl.classList.toggle("over", overAllocated);
+  }
   setCellSqft("fs-sqft-restaurant", restSellable);
   setCellVal("fs-value-restaurant", restValue);
   setCellSqft("fs-owner-target-sqft-restaurant", restSellable * rates.ownerShare / 3);
