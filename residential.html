@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Residential Unit Selector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="shared.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">RT</span>
+    <span class="brand-name">Ranchi Tower</span>
+  </a>
+  <div class="topbar-right">
+    <nav class="tab-nav" aria-label="Sections">
+      <a class="tab-link" href="index.html">Commercial</a>
+      <a class="tab-link is-active" href="residential.html">Residential</a>
+      <a class="tab-link" href="summary.html">Summary</a>
+    </nav>
+    <a class="settings-link" href="settings.html" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </a>
+  </div>
+</div>
+
+<header class="page-head">
+  <h1>Residential unit selector</h1>
+  <p class="page-sub">For each party, enter how many floors of each type they get (fractions allowed — e.g. 0.25 floor = 1 flat on a 4-flat floor, 0.5 floor = 1 unit on the 26th floor).</p>
+</header>
+
+<div class="card">
+  <h2>Floor summary</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:10px;">
+    <label style="display:flex; align-items:center; gap:5px; font-size:16px; cursor:pointer;">
+      <input type="checkbox" class="fs-party-toggle" value="1" checked onchange="onFsPartyToggle()" style="width:auto;">
+      <span class="dot p1dot"></span><span class="fs-party-toggle-label" data-p="1">Party 1</span>
+    </label>
+    <label style="display:flex; align-items:center; gap:5px; font-size:16px; cursor:pointer;">
+      <input type="checkbox" class="fs-party-toggle" value="2" onchange="onFsPartyToggle()" style="width:auto;">
+      <span class="dot p2dot"></span><span class="fs-party-toggle-label" data-p="2">Party 2</span>
+    </label>
+    <label style="display:flex; align-items:center; gap:5px; font-size:16px; cursor:pointer;">
+      <input type="checkbox" class="fs-party-toggle" value="3" onchange="onFsPartyToggle()" style="width:auto;">
+      <span class="dot p3dot"></span><span class="fs-party-toggle-label" data-p="3">Party 3</span>
+    </label>
+    <label style="display:flex; align-items:center; gap:5px; font-size:16px; cursor:pointer;">
+      <input type="checkbox" class="fs-party-toggle" value="4" onchange="onFsPartyToggle()" style="width:auto;">
+      <span class="dot p4dot"></span><span class="fs-party-toggle-label" data-p="4">Builder</span>
+    </label>
+  </div>
+  <div style="overflow-x: auto;">
+    <table class="summary-table" style="min-width: 900px;">
+      <colgroup id="floor-summary-colgroup"></colgroup>
+      <thead id="floor-summary-thead"></thead>
+      <tbody id="floor-summary-body"></tbody>
+    </table>
+  </div>
+  <p style="font-size:14px; color: var(--muted); margin: 6px 0 0;">Owner target is each floor's total value × owner share ÷ 3. Builder target is × (1 − owner share). Tick or untick parties above to add or remove their columns.</p>
+</div>
+
+<div id="blocks"></div>
+
+<div class="card" id="totals-card">
+  <h2>Totals</h2>
+  <div class="totals-grid">
+    <div>
+      <div class="party-chip"><span class="dot p1dot"></span><span id="label-1">Party 1</span></div>
+      <div class="stat-value" id="total-1">Rs 0</div>
+      <div class="stat-sub" id="units-1"></div>
+    </div>
+    <div>
+      <div class="party-chip"><span class="dot p2dot"></span><span id="label-2">Party 2</span></div>
+      <div class="stat-value" id="total-2">Rs 0</div>
+      <div class="stat-sub" id="units-2"></div>
+    </div>
+    <div>
+      <div class="party-chip"><span class="dot p3dot"></span><span id="label-3">Party 3</span></div>
+      <div class="stat-value" id="total-3">Rs 0</div>
+      <div class="stat-sub" id="units-3"></div>
+    </div>
+    <div>
+      <div class="party-chip"><span class="dot p4dot"></span><span id="label-4">Builder</span></div>
+      <div class="stat-value" id="total-4">Rs 0</div>
+      <div class="stat-sub" id="units-4"></div>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--line); margin-top:8px; padding-top:6px;" class="totals-subgrid">
+    <div><div class="stat-sub">Target (1-3)</div><div class="stat-value" id="target" style="font-size:1.1875rem;">Rs 0</div></div>
+    <div><div class="stat-sub">Owner cap left</div><div class="stat-value" id="cap" style="font-size:1.1875rem;">Rs 0</div></div>
+    <div><div class="stat-sub">Builder target</div><div class="stat-value" id="builder-target" style="font-size:1.1875rem;">Rs 0</div></div>
+    <div><div class="stat-sub">Builder cap left</div><div class="stat-value" id="builder-cap" style="font-size:1.1875rem;">Rs 0</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="col2">
+    <button class="toggle-btn" onclick="resetAll()">Reset all</button>
+    <a class="toggle-btn" href="settings.html" style="text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center;">Edit party names &amp; rates</a>
+  </div>
+  <p style="font-size:14px; color: var(--muted); margin: 8px 0 0;" id="storage-note">Selections save automatically in this browser.</p>
+</div>
+
+<script>
+const PARTIES = [1, 2, 3, 4]; // 4 = Builder
+const PARTY_CLASS = { 1: "p1", 2: "p2", 3: "p3", 4: "p4" };
+// PARTY_COLORS, RESIDENTIAL_BLOCKS, loadSettings(), fmtSqft(), fmtCr(), fmtRs() come from shared.js
+const BLOCKS = RESIDENTIAL_BLOCKS;
+
+// Flat list of every row across both blocks, in display order, for the floor summary table.
+const ALL_ROWS = [];
+BLOCKS.forEach(block => block.rows.forEach(row => ALL_ROWS.push(Object.assign({ blockId: block.id, blockName: block.name, rowKey: row.key }, row))));
+
+let floorInputs = {}; // key `${blockId}_${rowKey}_${partyId}` -> floors (number)
+let fsSelectedParties = [1];
+let settings = loadSettings();
+
+function cellKey(blockId, rowKey, partyId) { return blockId + "_" + rowKey + "_" + partyId; }
+function getInput(blockId, rowKey, partyId) { return floorInputs[cellKey(blockId, rowKey, partyId)] || 0; }
+
+function fmt(n, dp) {
+  dp = dp === undefined ? 0 : dp;
+  return Number(n).toLocaleString("en-IN", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+}
+
+function getRates() {
+  return {
+    rate: parseFloat(settings.residential.rate) || 0,
+    ownerShare: (parseFloat(settings.residential.ownerShare) || 0) / 100
+  };
+}
+
+function partyName(id) {
+  return settings.names[id] || (id === 4 ? "Builder" : ("Party " + id));
+}
+
+function buildBlocksUI() {
+  const container = document.getElementById("blocks");
+  container.innerHTML = "";
+  BLOCKS.forEach(block => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const totalFloors = block.rows.reduce((s, r) => s + r.floors, 0);
+    const totalUnits = block.rows.reduce((s, r) => s + r.floors * r.unitsPerFloor, 0);
+
+    let thead = "<tr><th>Floor type</th><th>Floors avail</th><th>Units/flr</th><th>Sellable sqft/flr</th>";
+    PARTIES.forEach(p => { thead += `<th class="p-head ${PARTY_CLASS[p]} party-col-${p}" data-pname="${p}">Floors</th>`; });
+    thead += "<th>Assigned</th><th>Remaining</th></tr>";
+
+    let tbody = "";
+    block.rows.forEach(row => {
+      tbody += `<tr data-block="${block.id}" data-row="${row.key}">`;
+      tbody += `<td>${row.label}</td>`;
+      tbody += `<td class="dim">${fmt(row.floors, row.floors % 1 ? 2 : 0)}</td>`;
+      tbody += `<td class="dim">${row.unitsPerFloor}</td>`;
+      tbody += `<td class="dim">${fmt(row.sellablePerFloor, 1)}</td>`;
+      PARTIES.forEach(p => {
+        tbody += `<td class="party-col-${p}">
+          <input type="number" min="0" step="${row.step}" value="0"
+            data-block="${block.id}" data-row="${row.key}" data-party="${p}"
+            oninput="onFloorInput(this)">
+          <div class="flats-hint" data-block="${block.id}" data-row="${row.key}" data-party="${p}"></div>
+        </td>`;
+      });
+      tbody += `<td class="row-assigned" data-block="${block.id}" data-row="${row.key}">0</td>`;
+      tbody += `<td class="row-remaining" data-block="${block.id}" data-row="${row.key}">${fmt(row.floors, row.floors % 1 ? 2 : 0)}</td>`;
+      tbody += `</tr>`;
+    });
+
+    card.innerHTML = `
+      <h3>${block.name} <span class="stat-sub" style="font-weight:400;">— ${totalFloors} floors, ${fmt(totalUnits)} sellable units</span></h3>
+      <div style="overflow-x:auto;">
+        <table class="unit-table" style="min-width:980px;">
+          <thead>${thead}</thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>`;
+    container.appendChild(card);
+  });
+  updatePartyHeaders();
+  applyPartyColumnVisibility();
+}
+
+function applyPartyColumnVisibility() {
+  PARTIES.forEach(p => {
+    const show = fsSelectedParties.includes(p);
+    document.querySelectorAll(".party-col-" + p).forEach(el => {
+      el.style.display = show ? "" : "none";
+    });
+  });
+}
+
+function updatePartyHeaders() {
+  document.querySelectorAll("th.p-head").forEach(th => {
+    th.textContent = partyName(th.getAttribute("data-pname"));
+  });
+}
+
+function buildFloorSummary() {
+  const thead = document.getElementById("floor-summary-thead");
+  const body = document.getElementById("floor-summary-body");
+  const colgroup = document.getElementById("floor-summary-colgroup");
+  thead.innerHTML = ""; body.innerHTML = ""; colgroup.innerHTML = "";
+
+  function addCol(width) { const col = document.createElement("col"); col.style.width = width + "px"; colgroup.appendChild(col); }
+  addCol(150); addCol(92); addCol(98); // Floor, Total sqft, Total value
+
+  const ownerParties = fsSelectedParties.filter(p => p !== 4);
+  const builderSelected = fsSelectedParties.includes(4);
+  const groupBorder = {owner: "#b8b8b0", 1: PARTY_COLORS[1].fill, 2: PARTY_COLORS[2].fill, 3: PARTY_COLORS[3].fill, 4: PARTY_COLORS[4].fill};
+
+  if (ownerParties.length > 0) { addCol(98); addCol(98); }
+  ownerParties.forEach(() => { addCol(98); addCol(98); });
+  if (builderSelected) { addCol(98); addCol(98); addCol(98); addCol(98); }
+
+  const row1 = document.createElement("tr");
+  row1.innerHTML = '<th rowspan="2">Floor</th><th rowspan="2">Total sqft</th><th rowspan="2">Total value</th>';
+  const row2 = document.createElement("tr");
+
+  if (ownerParties.length > 0) {
+    const th = document.createElement("th");
+    th.colSpan = 2; th.className = "fs-group-head";
+    th.style.borderLeft = "2px solid " + groupBorder.owner;
+    th.textContent = "Owner target (same for all owner parties)";
+    row1.appendChild(th);
+    ["Target sqft", "Target value"].forEach((label, i) => {
+      const th2 = document.createElement("th");
+      th2.textContent = label; th2.className = "fs-narrow-col";
+      if (i === 0) th2.style.borderLeft = "2px solid " + groupBorder.owner;
+      row2.appendChild(th2);
+    });
+  }
+
+  ownerParties.forEach(p => {
+    const th = document.createElement("th");
+    th.colSpan = 2; th.id = "fs-party-head-" + p; th.className = "fs-group-head";
+    th.style.color = PARTY_COLORS[p].dark; th.style.borderLeft = "2px solid " + groupBorder[p];
+    th.textContent = "Party " + p;
+    row1.appendChild(th);
+    ["Selected sqft", "Selected value"].forEach((label, i) => {
+      const th2 = document.createElement("th");
+      th2.textContent = label; th2.className = "fs-narrow-col";
+      if (i === 0) th2.style.borderLeft = "2px solid " + groupBorder[p];
+      row2.appendChild(th2);
+    });
+  });
+
+  if (builderSelected) {
+    const th = document.createElement("th");
+    th.colSpan = 4; th.id = "fs-party-head-4"; th.className = "fs-group-head";
+    th.style.color = PARTY_COLORS[4].dark; th.style.borderLeft = "2px solid " + groupBorder[4];
+    th.textContent = "Builder";
+    row1.appendChild(th);
+    ["Target sqft", "Target value", "Selected sqft", "Selected value"].forEach((label, i) => {
+      const th2 = document.createElement("th");
+      th2.textContent = label; th2.className = "fs-narrow-col";
+      if (i === 0) th2.style.borderLeft = "2px solid " + groupBorder[4];
+      row2.appendChild(th2);
+    });
+  }
+
+  thead.appendChild(row1); thead.appendChild(row2);
+
+  function rowHtml(label, key) {
+    let html = '<td>' + label + '</td><td id="fs-sqft-' + key + '"></td><td id="fs-value-' + key + '"></td>';
+    if (ownerParties.length > 0) {
+      html += '<td class="fs-narrow-col" style="border-left:2px solid ' + groupBorder.owner + ';" id="fs-owner-target-sqft-' + key + '"></td>' +
+        '<td class="fs-narrow-col" id="fs-owner-target-val-' + key + '"></td>';
+    }
+    ownerParties.forEach(p => {
+      html += '<td class="fs-narrow-col" style="border-left:2px solid ' + groupBorder[p] + ';" id="fs-sel-sqft-P' + p + '-' + key + '"></td>' +
+        '<td class="fs-narrow-col" id="fs-sel-val-P' + p + '-' + key + '"></td>';
+    });
+    if (builderSelected) {
+      html += '<td class="fs-narrow-col" style="border-left:2px solid ' + groupBorder[4] + ';" id="fs-target-sqft-P4-' + key + '"></td><td class="fs-narrow-col" id="fs-target-val-P4-' + key + '"></td>' +
+        '<td class="fs-narrow-col" id="fs-sel-sqft-P4-' + key + '"></td><td class="fs-narrow-col" id="fs-sel-val-P4-' + key + '"></td>';
+    }
+    return html;
+  }
+
+  ALL_ROWS.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = rowHtml(row.blockName + " — " + row.label, row.blockId + "_" + row.rowKey);
+    body.appendChild(tr);
+  });
+  const trTotal = document.createElement("tr");
+  trTotal.innerHTML = rowHtml("Total", "total");
+  body.appendChild(trTotal);
+}
+
+function onFsPartyToggle() {
+  fsSelectedParties = Array.from(document.querySelectorAll(".fs-party-toggle:checked")).map(el => parseInt(el.value));
+  buildFloorSummary();
+  applyPartyColumnVisibility();
+  onNameChange();
+  recalc();
+}
+
+function onNameChange() {
+  updatePartyHeaders();
+  document.getElementById("label-1").textContent = partyName(1);
+  document.getElementById("label-2").textContent = partyName(2);
+  document.getElementById("label-3").textContent = partyName(3);
+  document.getElementById("label-4").textContent = partyName(4);
+  document.querySelectorAll('.fs-party-toggle-label[data-p="1"]').forEach(el => el.textContent = partyName(1));
+  document.querySelectorAll('.fs-party-toggle-label[data-p="2"]').forEach(el => el.textContent = partyName(2));
+  document.querySelectorAll('.fs-party-toggle-label[data-p="3"]').forEach(el => el.textContent = partyName(3));
+  document.querySelectorAll('.fs-party-toggle-label[data-p="4"]').forEach(el => el.textContent = partyName(4));
+  const h4 = document.getElementById("fs-party-head-4");
+  if (h4) h4.textContent = partyName(4);
+  [1, 2, 3].forEach(p => {
+    const h = document.getElementById("fs-party-head-" + p);
+    if (h) h.textContent = partyName(p);
+  });
+  recalc();
+  saveState();
+}
+
+function onFloorInput(el) {
+  const b = el.getAttribute("data-block"), r = el.getAttribute("data-row"), p = el.getAttribute("data-party");
+  const v = parseFloat(el.value);
+  floorInputs[cellKey(b, r, p)] = isNaN(v) || v < 0 ? 0 : v;
+  recalc();
+  saveState();
+}
+
+function setCellSqft(id, sqftValue) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const rounded = Math.round(sqftValue);
+  el.textContent = rounded.toLocaleString("en-IN");
+  el.classList.toggle("dim", rounded === 0);
+}
+function setCellVal(id, rsValue) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = fmtCr(rsValue);
+  const crRounded = Math.round((rsValue / 1e7) * 100) / 100;
+  el.classList.toggle("dim", crRounded === 0);
+}
+
+function recalc() {
+  const rates = getRates();
+  let totals = {1: 0, 2: 0, 3: 0, 4: 0};
+  let unitCounts = {1: {flats: 0, penthouses: 0}, 2: {flats: 0, penthouses: 0}, 3: {flats: 0, penthouses: 0}, 4: {flats: 0, penthouses: 0}};
+  let totalSqft = 0, totalValue = 0;
+  let totalPartySqft = {1: 0, 2: 0, 3: 0, 4: 0};
+
+  ALL_ROWS.forEach(row => {
+    const summaryKey = row.blockId + "_" + row.rowKey;
+    const rowTotalSqft = row.floors * row.sellablePerFloor;
+    const rowTotalValue = rowTotalSqft * rates.rate;
+    totalSqft += rowTotalSqft;
+    totalValue += rowTotalValue;
+
+    let assigned = 0;
+    let rowPartySqft = {1: 0, 2: 0, 3: 0, 4: 0};
+    PARTIES.forEach(p => {
+      const floors = getInput(row.blockId, row.rowKey, p);
+      assigned += floors;
+      const units = floors * row.unitsPerFloor;
+      const sqft = floors * row.sellablePerFloor;
+      rowPartySqft[p] = sqft;
+      totalPartySqft[p] += sqft;
+      totals[p] += sqft * rates.rate;
+      if (row.unitLabel === "penthouses") unitCounts[p].penthouses += units; else unitCounts[p].flats += units;
+
+      const hintEl = document.querySelector(`.flats-hint[data-block="${row.blockId}"][data-row="${row.rowKey}"][data-party="${p}"]`);
+      if (hintEl) {
+        const roundedUnits = Math.round(units);
+        const isWhole = Math.abs(units - roundedUnits) < 1e-6;
+        if (floors > 0) {
+          hintEl.textContent = `= ${fmt(units, isWhole ? 0 : 2)} ${row.unitLabel}`;
+          hintEl.className = "flats-hint" + (isWhole ? "" : " warn");
+        } else {
+          hintEl.textContent = ""; hintEl.className = "flats-hint";
+        }
+      }
+    });
+
+    const remaining = row.floors - assigned;
+    const assignedEl = document.querySelector(`.row-assigned[data-block="${row.blockId}"][data-row="${row.rowKey}"]`);
+    const remainingEl = document.querySelector(`.row-remaining[data-block="${row.blockId}"][data-row="${row.rowKey}"]`);
+    if (assignedEl) assignedEl.textContent = fmt(assigned, assigned % 1 ? 2 : 0);
+    if (remainingEl) {
+      remainingEl.textContent = fmt(remaining, remaining % 1 ? 2 : 0);
+      remainingEl.className = "row-remaining" + (remaining < -1e-6 ? " over" : "");
+    }
+
+    setCellSqft("fs-sqft-" + summaryKey, rowTotalSqft);
+    setCellVal("fs-value-" + summaryKey, rowTotalValue);
+    setCellSqft("fs-owner-target-sqft-" + summaryKey, rowTotalSqft * rates.ownerShare / 3);
+    setCellVal("fs-owner-target-val-" + summaryKey, rowTotalValue * rates.ownerShare / 3);
+    fsSelectedParties.forEach(p => {
+      const targetSqft = p === 4 ? rowTotalSqft * (1 - rates.ownerShare) : rowTotalSqft * rates.ownerShare / 3;
+      setCellSqft("fs-target-sqft-P" + p + "-" + summaryKey, targetSqft);
+      setCellSqft("fs-sel-sqft-P" + p + "-" + summaryKey, rowPartySqft[p]);
+      setCellVal("fs-target-val-P" + p + "-" + summaryKey, targetSqft * rates.rate);
+      setCellVal("fs-sel-val-P" + p + "-" + summaryKey, rowPartySqft[p] * rates.rate);
+    });
+  });
+
+  setCellSqft("fs-sqft-total", totalSqft);
+  setCellVal("fs-value-total", totalValue);
+  setCellSqft("fs-owner-target-sqft-total", totalSqft * rates.ownerShare / 3);
+  setCellVal("fs-owner-target-val-total", totalValue * rates.ownerShare / 3);
+  fsSelectedParties.forEach(p => {
+    const targetSqft = p === 4 ? totalSqft * (1 - rates.ownerShare) : totalSqft * rates.ownerShare / 3;
+    const targetVal = p === 4 ? totalValue * (1 - rates.ownerShare) : totalValue * rates.ownerShare / 3;
+    setCellSqft("fs-target-sqft-P" + p + "-total", targetSqft);
+    setCellSqft("fs-sel-sqft-P" + p + "-total", totalPartySqft[p]);
+    setCellVal("fs-target-val-P" + p + "-total", targetVal);
+    setCellVal("fs-sel-val-P" + p + "-total", totals[p]);
+  });
+
+  PARTIES.forEach(p => {
+    document.getElementById("total-" + p).textContent = fmtCr(totals[p]);
+    const u = unitCounts[p];
+    const parts = [];
+    if (u.flats > 1e-6) parts.push(fmt(Math.round(u.flats)) + " flats");
+    if (u.penthouses > 1e-6) parts.push(fmt(Math.round(u.penthouses)) + " penthouses");
+    document.getElementById("units-" + p).textContent = parts.length ? parts.join(" · ") : "No units assigned";
+  });
+
+  const ownerCap = totalValue * rates.ownerShare;
+  const builderShare = totalValue * (1 - rates.ownerShare);
+  const target = ownerCap / 3;
+  const ownerClaimed = totals[1] + totals[2] + totals[3];
+  const headroom = ownerCap - ownerClaimed;
+  const builderHeadroom = builderShare - totals[4];
+
+  document.getElementById("target").textContent = fmtCr(target);
+  const capEl = document.getElementById("cap");
+  capEl.textContent = fmtCr(headroom);
+  capEl.classList.toggle("over", headroom < 0);
+  document.getElementById("builder-target").textContent = fmtCr(builderShare);
+  const builderCapEl = document.getElementById("builder-cap");
+  builderCapEl.textContent = fmtCr(builderHeadroom);
+  builderCapEl.classList.toggle("over", builderHeadroom < 0);
+}
+
+function resetAll() {
+  if (!confirm("Clear all floor assignments for every party?")) return;
+  floorInputs = {};
+  document.querySelectorAll('input[type=number][data-party]').forEach(el => el.value = 0);
+  recalc();
+  saveState();
+}
+
+function saveState() {
+  try {
+    const data = {
+      floorInputs: floorInputs,
+      fsSelectedParties: fsSelectedParties
+    };
+    localStorage.setItem("residential-selector-state", JSON.stringify(data));
+  } catch (e) {
+    const note = document.getElementById("storage-note");
+    if (note) note.textContent = "Auto-save isn't available in this browser — selections won't persist after you reload.";
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem("residential-selector-state");
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.floorInputs) floorInputs = data.floorInputs;
+    if (Array.isArray(data.fsSelectedParties)) {
+      fsSelectedParties = data.fsSelectedParties;
+      document.querySelectorAll(".fs-party-toggle").forEach(el => {
+        el.checked = fsSelectedParties.includes(parseInt(el.value));
+      });
+    }
+    Object.keys(floorInputs).forEach(key => {
+      const parts = key.split("_");
+      const el = document.querySelector(`input[data-block="${parts[0]}"][data-row="${parts[1]}"][data-party="${parts[2]}"]`);
+      if (el) el.value = floorInputs[key];
+    });
+  } catch (e) {
+    // ignore corrupt/missing state
+  }
+}
+
+buildBlocksUI();
+loadState();
+buildFloorSummary();
+applyPartyColumnVisibility();
+onNameChange();
+recalc();
+</script>
+
+</body>
+</html>

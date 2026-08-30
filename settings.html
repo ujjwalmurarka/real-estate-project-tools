@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="shared.js"></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">RT</span>
+    <span class="brand-name">Ranchi Tower</span>
+  </a>
+  <div class="topbar-right">
+    <nav class="tab-nav" aria-label="Sections">
+      <a class="tab-link" href="index.html">Commercial</a>
+      <a class="tab-link" href="residential.html">Residential</a>
+      <a class="tab-link" href="summary.html">Summary</a>
+    </nav>
+    <a class="settings-link is-active" href="settings.html" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </a>
+  </div>
+</div>
+
+<header class="page-head">
+  <h1>Settings</h1>
+  <p class="page-sub">Party names are shared across Commercial, Residential, and Summary. Rates are kept separate for each, since the figures genuinely differ.</p>
+</header>
+
+<div class="card">
+  <h2>Party names</h2>
+  <div class="col4">
+    <div><label>Party 1</label><input type="text" id="name-1" value="Party 1" oninput="saveSettings()"></div>
+    <div><label>Party 2</label><input type="text" id="name-2" value="Party 2" oninput="saveSettings()"></div>
+    <div><label>Party 3</label><input type="text" id="name-3" value="Party 3" oninput="saveSettings()"></div>
+    <div><label>Builder</label><input type="text" id="name-4" value="Builder" oninput="saveSettings()"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Commercial rate assumptions</h2>
+  <div class="col2" style="margin-bottom:var(--space-4);">
+    <div><label>Ground floor rate (Rs/sqft)</label><input type="number" id="rate-ground" value="25000" oninput="saveSettings()"></div>
+    <div><label>1st floor rate (Rs/sqft)</label><input type="number" id="rate-f1" value="12000" oninput="saveSettings()"></div>
+  </div>
+  <div class="col2" style="margin-bottom:var(--space-4);">
+    <div><label>2nd floor rate (Rs/sqft)</label><input type="number" id="rate-f2" value="8000" oninput="saveSettings()"></div>
+    <div><label>3rd floor rate (Rs/sqft)</label><input type="number" id="rate-f3" value="6000" oninput="saveSettings()"></div>
+  </div>
+  <div class="col2" style="margin-bottom:var(--space-4);">
+    <div><label>4th floor / restaurant rate (Rs/sqft)</label><input type="number" id="rate-f4" value="3000" oninput="saveSettings()"></div>
+    <div><label>Owner share of commercial (%)</label><input type="number" id="rate-owner-share" value="50" oninput="saveSettings()"></div>
+  </div>
+  <div class="col2">
+    <div><label>Ground floor loading factor (carpet to sellable)</label><input type="number" step="0.0001" id="loading-ground" value="1.5614" oninput="saveSettings()"></div>
+    <div><label>Upper floor loading factor (carpet to sellable)</label><input type="number" step="0.0001" id="loading-upper" value="1.5709" oninput="saveSettings()"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Residential rate assumptions</h2>
+  <div class="col2">
+    <div><label>Residential rate (Rs/sqft)</label><input type="number" id="rate-residential" value="6000" oninput="saveSettings()"></div>
+    <div><label>Owner share of residential (%)</label><input type="number" id="residential-owner-share" value="47" min="0" max="100" step="0.1" oninput="saveSettings()"></div>
+  </div>
+</div>
+
+<p id="storage-note" class="stat-sub"></p>
+
+<script>
+// SETTINGS_KEY, SETTINGS_DEFAULTS, loadSettings() come from shared.js
+
+function applyToForm(s) {
+  document.getElementById("name-1").value = s.names[1];
+  document.getElementById("name-2").value = s.names[2];
+  document.getElementById("name-3").value = s.names[3];
+  document.getElementById("name-4").value = s.names[4];
+
+  document.getElementById("rate-ground").value = s.commercial.ground;
+  document.getElementById("rate-f1").value = s.commercial.f1;
+  document.getElementById("rate-f2").value = s.commercial.f2;
+  document.getElementById("rate-f3").value = s.commercial.f3;
+  document.getElementById("rate-f4").value = s.commercial.f4;
+  document.getElementById("rate-owner-share").value = s.commercial.ownerShare;
+  document.getElementById("loading-ground").value = s.commercial.loadingGround;
+  document.getElementById("loading-upper").value = s.commercial.loadingUpper;
+
+  document.getElementById("rate-residential").value = s.residential.rate;
+  document.getElementById("residential-owner-share").value = s.residential.ownerShare;
+}
+
+function saveSettings() {
+  const data = {
+    names: {
+      1: document.getElementById("name-1").value || "Party 1",
+      2: document.getElementById("name-2").value || "Party 2",
+      3: document.getElementById("name-3").value || "Party 3",
+      4: document.getElementById("name-4").value || "Builder"
+    },
+    commercial: {
+      ground: document.getElementById("rate-ground").value,
+      f1: document.getElementById("rate-f1").value,
+      f2: document.getElementById("rate-f2").value,
+      f3: document.getElementById("rate-f3").value,
+      f4: document.getElementById("rate-f4").value,
+      ownerShare: document.getElementById("rate-owner-share").value,
+      loadingGround: document.getElementById("loading-ground").value,
+      loadingUpper: document.getElementById("loading-upper").value
+    },
+    residential: {
+      rate: document.getElementById("rate-residential").value,
+      ownerShare: document.getElementById("residential-owner-share").value
+    }
+  };
+  try {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+    document.getElementById("storage-note").textContent = "Saved automatically in this browser.";
+  } catch (e) {
+    document.getElementById("storage-note").textContent = "Auto-save isn't available in this browser — changes won't persist after you reload.";
+  }
+}
+
+applyToForm(loadSettings());
+document.getElementById("storage-note").textContent = "Saved automatically in this browser.";
+</script>
+
+</body>
+</html>
