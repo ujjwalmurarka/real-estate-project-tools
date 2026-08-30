@@ -22,6 +22,7 @@
       <a class="tab-link" href="index.html">Commercial</a>
       <a class="tab-link is-active" href="residential.html">Residential</a>
       <a class="tab-link" href="summary.html">Summary</a>
+      <a class="tab-link" href="reference.html">Reference</a>
     </nav>
     <a class="settings-link" href="settings.html" aria-label="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -142,23 +143,28 @@ function partyName(id) {
 function buildBlocksUI() {
   const container = document.getElementById("blocks");
   container.innerHTML = "";
+  const rates = getRates();
   BLOCKS.forEach(block => {
     const card = document.createElement("div");
     card.className = "card";
     const totalFloors = block.rows.reduce((s, r) => s + r.floors, 0);
     const totalUnits = block.rows.reduce((s, r) => s + r.floors * r.unitsPerFloor, 0);
 
-    let thead = "<tr><th>Floor type</th><th>Floors avail</th><th>Units/flr</th><th>Sellable sqft/flr</th>";
-    PARTIES.forEach(p => { thead += `<th class="p-head ${PARTY_CLASS[p]} party-col-${p}" data-pname="${p}">Floors</th>`; });
-    thead += "<th>Assigned</th><th>Remaining</th></tr>";
+    let thead = "<tr><th>Floor type</th><th>Units/flr</th><th>Total sellable area</th><th>Total floor value</th><th>Value/unit</th>";
+    PARTIES.forEach(p => { thead += `<th class="p-head ${PARTY_CLASS[p]} party-col-${p}" data-pname="${p}"></th>`; });
+    thead += "</tr>";
 
     let tbody = "";
     block.rows.forEach(row => {
+      const rowTotalSqft = row.floors * row.sellablePerFloor;
+      const rowTotalValue = rowTotalSqft * rates.rate;
+      const unitValue = (row.sellablePerFloor / row.unitsPerFloor) * rates.rate;
       tbody += `<tr data-block="${block.id}" data-row="${row.key}">`;
       tbody += `<td>${row.label}</td>`;
-      tbody += `<td class="dim">${fmt(row.floors, row.floors % 1 ? 2 : 0)}</td>`;
       tbody += `<td class="dim">${row.unitsPerFloor}</td>`;
-      tbody += `<td class="dim">${fmt(row.sellablePerFloor, 1)}</td>`;
+      tbody += `<td class="dim">${fmtSqft(rowTotalSqft)}</td>`;
+      tbody += `<td class="dim">${fmtCr(rowTotalValue)}</td>`;
+      tbody += `<td class="dim">${fmtCr(unitValue)}</td>`;
       PARTIES.forEach(p => {
         tbody += `<td class="party-col-${p}">
           <input type="number" min="0" step="${row.step}" value="0"
@@ -167,8 +173,6 @@ function buildBlocksUI() {
           <div class="flats-hint" data-block="${block.id}" data-row="${row.key}" data-party="${p}"></div>
         </td>`;
       });
-      tbody += `<td class="row-assigned" data-block="${block.id}" data-row="${row.key}">0</td>`;
-      tbody += `<td class="row-remaining" data-block="${block.id}" data-row="${row.key}">${fmt(row.floors, row.floors % 1 ? 2 : 0)}</td>`;
       tbody += `</tr>`;
     });
 
@@ -197,7 +201,8 @@ function applyPartyColumnVisibility() {
 
 function updatePartyHeaders() {
   document.querySelectorAll("th.p-head").forEach(th => {
-    th.textContent = partyName(th.getAttribute("data-pname"));
+    const name = partyName(th.getAttribute("data-pname"));
+    th.innerHTML = name + '<div style="font-weight:400; text-transform:none; letter-spacing:0; color:var(--muted); margin-top:2px;"># of floors</div>';
   });
 }
 
@@ -266,8 +271,14 @@ function buildFloorSummary() {
 
   thead.appendChild(row1); thead.appendChild(row2);
 
-  function rowHtml(label, key) {
-    let html = '<td>' + label + '</td><td id="fs-sqft-' + key + '"></td><td id="fs-value-' + key + '"></td>';
+  let colCount = 3;
+  if (ownerParties.length > 0) colCount += 2;
+  colCount += ownerParties.length * 2;
+  if (builderSelected) colCount += 4;
+
+  function rowHtml(label, key, indent) {
+    const labelStyle = indent ? ' style="padding-left:24px; color:var(--ink-soft);"' : '';
+    let html = '<td' + labelStyle + '>' + label + '</td><td id="fs-sqft-' + key + '"></td><td id="fs-value-' + key + '"></td>';
     if (ownerParties.length > 0) {
       html += '<td class="fs-narrow-col" style="border-left:2px solid ' + groupBorder.owner + ';" id="fs-owner-target-sqft-' + key + '"></td>' +
         '<td class="fs-narrow-col" id="fs-owner-target-val-' + key + '"></td>';
@@ -283,10 +294,15 @@ function buildFloorSummary() {
     return html;
   }
 
-  ALL_ROWS.forEach(row => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = rowHtml(row.blockName + " — " + row.label, row.blockId + "_" + row.rowKey);
-    body.appendChild(tr);
+  BLOCKS.forEach(block => {
+    const trHead = document.createElement("tr");
+    trHead.innerHTML = '<td colspan="' + colCount + '" class="fs-group-head" style="background:var(--bg);">' + block.name + '</td>';
+    body.appendChild(trHead);
+    block.rows.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = rowHtml(row.label, block.id + "_" + row.key, true);
+      body.appendChild(tr);
+    });
   });
   const trTotal = document.createElement("tr");
   trTotal.innerHTML = rowHtml("Total", "total");
@@ -358,11 +374,9 @@ function recalc() {
     totalSqft += rowTotalSqft;
     totalValue += rowTotalValue;
 
-    let assigned = 0;
     let rowPartySqft = {1: 0, 2: 0, 3: 0, 4: 0};
     PARTIES.forEach(p => {
       const floors = getInput(row.blockId, row.rowKey, p);
-      assigned += floors;
       const units = floors * row.unitsPerFloor;
       const sqft = floors * row.sellablePerFloor;
       rowPartySqft[p] = sqft;
@@ -382,15 +396,6 @@ function recalc() {
         }
       }
     });
-
-    const remaining = row.floors - assigned;
-    const assignedEl = document.querySelector(`.row-assigned[data-block="${row.blockId}"][data-row="${row.rowKey}"]`);
-    const remainingEl = document.querySelector(`.row-remaining[data-block="${row.blockId}"][data-row="${row.rowKey}"]`);
-    if (assignedEl) assignedEl.textContent = fmt(assigned, assigned % 1 ? 2 : 0);
-    if (remainingEl) {
-      remainingEl.textContent = fmt(remaining, remaining % 1 ? 2 : 0);
-      remainingEl.className = "row-remaining" + (remaining < -1e-6 ? " over" : "");
-    }
 
     setCellSqft("fs-sqft-" + summaryKey, rowTotalSqft);
     setCellVal("fs-value-" + summaryKey, rowTotalValue);

@@ -276,6 +276,7 @@ table.unit-table .flats-hint.warn { color: var(--danger); }
 .shopbox .label-wrap { padding: 3px 5px; border-radius: 5px; background: rgba(255,255,255,0.92); line-height: 1.2; text-align: center; }
 .shopbox .shop-name { display: block; font-family: var(--font-sans); font-size: 11px; font-weight: 700; }
 .shopbox .shop-sqft { display: block; font-size: 9.5px; font-weight: 500; color: #333; }
+.shopbox .shop-carpet { display: block; font-size: 8.5px; font-weight: 400; color: #666; }
 .shopbox .shop-value { display: block; font-size: 10px; font-weight: 700; color: #111; }
 .legend { display: flex; gap: var(--space-3); flex-wrap: wrap; font-size: var(--fs-0); color: var(--muted); margin-top: var(--space-3); }
 .legend-item { display: flex; align-items: center; gap: var(--space-1); }

@@ -26,6 +26,7 @@
       <a class="tab-link is-active" href="index.html">Commercial</a>
       <a class="tab-link" href="residential.html">Residential</a>
       <a class="tab-link" href="summary.html">Summary</a>
+      <a class="tab-link" href="reference.html">Reference</a>
     </nav>
     <a class="settings-link" href="settings.html" aria-label="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -223,6 +224,7 @@ function buildFloors() {
       box.dataset.key = fl.key + "-" + b.name;
       box.innerHTML = '<span class="label-wrap"><span class="shop-name">Shop ' + b.name + '</span>' +
         '<span class="shop-sqft" id="sqft-' + fl.key + '-' + b.name + '"></span>' +
+        '<span class="shop-carpet">' + Math.round(b.carpet).toLocaleString("en-IN") + ' sqft carpet</span>' +
         '<span class="shop-value" id="val-' + fl.key + '-' + b.name + '"></span></span>';
       box.addEventListener("click", () => {
         const k = box.dataset.key;
@@ -886,7 +888,7 @@ function recalc() {
       const valEl = document.getElementById("val-" + k);
       if (valEl) valEl.textContent = fmtCr(value);
       const sqftEl = document.getElementById("sqft-" + k);
-      if (sqftEl) sqftEl.textContent = Math.round(sellable).toLocaleString("en-IN") + " sqft";
+      if (sqftEl) sqftEl.textContent = Math.round(sellable).toLocaleString("en-IN") + " sqft sellable";
     });
     const ft = document.getElementById("floor-total-" + fl.key);
     if (ft) ft.textContent = "Floor total: " + fmtCr(floorSum);
