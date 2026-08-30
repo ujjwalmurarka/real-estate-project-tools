@@ -30,14 +30,14 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 
   /* Type scale — sized for comfortable reading, not just fitting content in a box */
-  --fs-00: 0.8125rem;   /* 13px — micro labels (never smaller than this anywhere) */
-  --fs-0: 0.875rem;     /* 14px — narrow table columns */
-  --fs-1: 1rem;         /* 16px — table body, form inputs, buttons */
-  --fs-2: 1.0625rem;    /* 17px — body copy, default */
-  --fs-3: 1.1875rem;    /* 19px — card subheads */
-  --fs-4: 1.5rem;       /* 24px — card section titles */
-  --fs-5: 2.5rem;       /* 40px — page title */
-  --fs-6: 1.875rem;     /* 30px — big stat numbers */
+  --fs-00: 0.75rem;     /* 12px — micro labels */
+  --fs-0: 0.8125rem;    /* 13px — narrow table columns */
+  --fs-1: 0.9375rem;    /* 15px — table body, buttons (form inputs pinned to 16px separately, below) */
+  --fs-2: 1rem;         /* 16px — body copy, default */
+  --fs-3: 1.0625rem;    /* 17px — card subheads */
+  --fs-4: 1.3125rem;    /* 21px — card section titles */
+  --fs-5: 2.125rem;     /* 34px — page title */
+  --fs-6: 1.625rem;     /* 26px — big stat numbers */
 
   --space-1: 4px; --space-2: 8px; --space-3: 14px; --space-4: 20px; --space-5: 28px; --space-6: 36px; --space-7: 48px;
   --radius: 16px;
@@ -51,11 +51,15 @@ html, body { max-width: 100%; overflow-x: hidden; }
 body {
   font-family: var(--font-sans);
   font-size: var(--fs-2);
-  line-height: 1.55;
+  line-height: 1.5;
   background: var(--bg);
   color: var(--ink);
   margin: 0;
-  padding: var(--space-5);
+  padding: var(--space-4);
+}
+
+@media (max-width: 540px) {
+  body { padding: var(--space-3); }
 }
 
 @media (min-width: 760px) {
@@ -74,7 +78,7 @@ body {
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-weight: 800; font-size: 12px; letter-spacing: -0.02em;
 }
-.brand-name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2); letter-spacing: -0.01em; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-2); line-height: 1.2; letter-spacing: -0.01em; }
 
 .topbar-right { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; min-width: 0; max-width: 100%; }
 
@@ -92,6 +96,10 @@ body {
 @media (max-width: 480px) {
   .tab-link { padding: 6px 12px; font-size: var(--fs-0); }
   .brand-name { font-size: var(--fs-1); }
+  /* Full-width row: pill nav scrolls internally on the left, settings icon pinned to the right edge. */
+  .topbar-right { width: 100%; justify-content: space-between; flex-wrap: nowrap; }
+  .tab-nav { flex: 1 1 auto; }
+  .settings-link { margin-left: var(--space-2); }
 }
 .tab-link:hover { color: var(--ink); }
 .tab-link.is-active { color: var(--ink); background: #fff; box-shadow: var(--shadow-sm); }
@@ -109,18 +117,18 @@ body {
 /* ---- Page header ---- */
 .page-head { margin: 0 0 var(--space-6); }
 .page-head h1 {
-  font-family: var(--font-display); font-weight: 800; font-size: var(--fs-5);
+  font-family: var(--font-display); font-weight: 800; font-size: var(--fs-5); line-height: 1.1;
   letter-spacing: -0.02em; color: var(--ink); margin: 0 0 var(--space-2);
 }
 .page-sub { font-family: var(--font-sans); font-size: var(--fs-2); color: var(--ink-soft); margin: 0; max-width: 640px; }
 
 /* ---- Headings / text ---- */
 h2 {
-  font-family: var(--font-sans); font-size: var(--fs-0); font-weight: 700;
+  font-family: var(--font-sans); font-size: var(--fs-0); font-weight: 700; line-height: 1.25;
   text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
   margin: 0 0 var(--space-4);
 }
-h3 { font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; margin: 0 0 var(--space-2); color: var(--ink); }
+h3 { font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700; line-height: 1.2; margin: 0 0 var(--space-2); color: var(--ink); }
 .sub { font-family: var(--font-sans); font-size: var(--fs-1); color: var(--muted); margin: 0 0 var(--space-2); }
 
 /* ---- Cards ---- */
@@ -134,7 +142,8 @@ h3 { font-family: var(--font-display); font-size: var(--fs-3); font-weight: 700;
 label { font-family: var(--font-sans); font-size: var(--fs-0); font-weight: 500; color: var(--muted); display: block; margin-bottom: var(--space-2); }
 input[type=text], input[type=number], select {
   width: 100%; padding: 12px var(--space-3); border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm);
-  font-size: var(--fs-1); font-family: var(--font-sans); background: #fff; color: var(--ink);
+  font-size: 16px; /* pinned, not var(--fs-1) — below 16px iOS Safari auto-zooms the page on focus */
+  font-family: var(--font-sans); background: #fff; color: var(--ink);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   min-height: 44px;
 }
@@ -253,15 +262,21 @@ table.unit-table .flats-hint.warn { color: var(--danger); }
 .floor-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
 .floor-wrap { position: relative; width: 100%; min-width: 480px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line); }
 .floor-wrap img { display: block; width: 100%; height: auto; }
+@media (max-width: 540px) {
+  /* Trade a little of that legibility floor for fitting the plan on-screen without scrolling —
+     tighter card padding + a lower (but still meaningfully bigger-than-original) min-width. */
+  .floor-card { padding: var(--space-2); }
+  .floor-wrap { min-width: 400px; }
+}
 .shopbox {
   position: absolute; border: 1.5px solid rgba(0,0,0,0.35); cursor: pointer;
   display: flex; align-items: center; justify-content: center; text-align: center;
   transition: background 0.15s ease;
 }
 .shopbox .label-wrap { padding: 3px 5px; border-radius: 5px; background: rgba(255,255,255,0.92); line-height: 1.2; text-align: center; }
-.shopbox .shop-name { display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 700; }
-.shopbox .shop-sqft { display: block; font-size: 10.5px; font-weight: 500; color: #333; }
-.shopbox .shop-value { display: block; font-size: 11px; font-weight: 700; color: #111; }
+.shopbox .shop-name { display: block; font-family: var(--font-sans); font-size: 11px; font-weight: 700; }
+.shopbox .shop-sqft { display: block; font-size: 9.5px; font-weight: 500; color: #333; }
+.shopbox .shop-value { display: block; font-size: 10px; font-weight: 700; color: #111; }
 .legend { display: flex; gap: var(--space-3); flex-wrap: wrap; font-size: var(--fs-0); color: var(--muted); margin-top: var(--space-3); }
 .legend-item { display: flex; align-items: center; gap: var(--space-1); }
 .floor-total { font-size: var(--fs-2); color: var(--ink-soft); margin-top: var(--space-2); font-weight: 700; }
